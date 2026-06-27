@@ -54,6 +54,7 @@ package_windows() {
   cp -a "$root/plugins" "$package_dir/plugins"
 
   require_vlc_runtime "$package_dir" windows true
+  prune_vlc_plugins "$package_dir/plugins"
   zip_package "$package_dir" "$asset_name"
 }
 

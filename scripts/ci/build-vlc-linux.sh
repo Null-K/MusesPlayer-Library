@@ -89,6 +89,7 @@ package_flatpak_vlc() {
 
   require_vlc_runtime "$package_dir" linux true
   require_vlc_linux_full_modules "$package_dir"
+  prune_vlc_plugins "$package_dir/plugins"
 
   plugin_count="$(find "$package_dir/plugins" -type f -name '*.so' | wc -l | tr -d ' ')"
   notes="Flathub stable $flatpak_ref commit $commit with $plugin_count VLC plugin modules"

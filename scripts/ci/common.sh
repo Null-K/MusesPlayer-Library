@@ -198,6 +198,41 @@ require_vlc_runtime() {
   fi
 }
 
+# 裁剪 VLC 插件目录，删除本播放器用不到的大类（桌面 GUI、可视化、控制接口、Lua 脚本、
+# 设备发现、光盘/蓝光等），保留 access/demux/codec/audio/video 等播放核心。受环境变量
+# VLC_PRUNE_PLUGINS 控制：默认 1（裁剪）；设为 0 保留全量插件。
+#
+# 仅按「整目录」删除确定无用的大类，不做单插件白名单，避免 VLC 版本升级后误删核心模块。
+# 必须在完整性校验（确认下载的是完整插件集）之后调用。
+prune_vlc_plugins() {
+  local plugins="$1"
+  if [[ "${VLC_PRUNE_PLUGINS:-1}" != "1" ]]; then
+    log "VLC_PRUNE_PLUGINS!=1，保留全量插件"
+    return 0
+  fi
+  [[ -d "$plugins" ]] || die "prune_vlc_plugins: 插件目录不存在: $plugins"
+
+  # 确定无用的大类目录（VLC 标准插件分类名）。
+  local prune_dirs=(
+    gui            # 桌面 Qt/Skins 界面，本播放器用回调表面，无窗口
+    visualization  # 音频可视化
+    control        # 遥控/热键/dbus/ntservice 等控制接口
+    lua            # Lua 脚本（含各网站解析），解析在服务端自做
+    services_discovery # 局域网/UPnP 设备发现
+  )
+
+  local before after d
+  before="$(find "$plugins" -type f -name '*.so' -o -type f -name '*.dll' | wc -l | tr -d ' ')"
+  for d in "${prune_dirs[@]}"; do
+    if [[ -d "$plugins/$d" ]]; then
+      rm -rf "$plugins/$d"
+      log "已删除插件目录: $d/"
+    fi
+  done
+  after="$(find "$plugins" -type f -name '*.so' -o -type f -name '*.dll' | wc -l | tr -d ' ')"
+  log "VLC 插件裁剪完成: $before -> $after 个模块"
+}
+
 require_mpv_runtime() {
   local root="$1"
   local platform="$2"
