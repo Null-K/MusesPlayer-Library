@@ -63,7 +63,7 @@ jobs:
           MPV_ANDROID_REF_INPUT: ${{ github.event.inputs.mpv_android_ref || 'latest-release' }}
           RELEASE_TAG_INPUT: ${{ github.event.inputs.release_tag || 'runtime-latest' }}
         run: |
-          scripts/ci/resolve-versions.sh
+          bash scripts/ci/resolve-versions.sh
           echo "release_tag=$RELEASE_TAG_INPUT" >> "$GITHUB_OUTPUT"
 
   libvlc-windows:
