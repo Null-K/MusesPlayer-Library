@@ -1153,12 +1153,17 @@ build_ffmpeg() {
       --enable-libpulse
       --enable-openal
       --enable-opengl
-      --enable-sdl2
       --enable-libdrm
       --enable-vaapi
       --enable-vdpau
       --enable-vulkan
     )
+    # SDL2 仅用于 ffmpeg 的 sdl2 输出设备，libmpv 作为库并不需要。交叉编译时宿主的
+    # libsdl2-dev 是 x64、对 arm 不可用，强制 --enable-sdl2 会因找不到目标架构 SDL2 而
+    # 配置失败。改为按目标架构的 pkg-config 探测，存在才启用，避免 arm 等平台构建中断。
+    if PKG_CONFIG_LIBDIR="$pkg_config_libdir" PKG_CONFIG_PATH= pkg-config --exists sdl2; then
+      args+=(--enable-sdl2)
+    fi
     if [[ "$target_arch" != "arm32" ]]; then
       args+=(--enable-ffnvcodec)
     fi
