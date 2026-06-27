@@ -1158,11 +1158,16 @@ build_ffmpeg() {
       --enable-vdpau
       --enable-vulkan
     )
-    # SDL2 仅用于 ffmpeg 的 sdl2 输出设备，libmpv 作为库并不需要。交叉编译时宿主的
-    # libsdl2-dev 是 x64、对 arm 不可用，强制 --enable-sdl2 会因找不到目标架构 SDL2 而
-    # 配置失败。改为按目标架构的 pkg-config 探测，存在才启用，避免 arm 等平台构建中断。
-    if PKG_CONFIG_LIBDIR="$pkg_config_libdir" PKG_CONFIG_PATH= pkg-config --exists sdl2; then
+    # SDL2 仅用于 ffmpeg 的 sdl2 输出设备，libmpv 作为库并不需要。交叉编译（arm32/x86）时
+    # 宿主的 libsdl2-dev 是 x64、对目标架构不可用，且其 .pc 会被 pkg-config 在 /usr/share
+    # 等路径误探到（假阳性），强制 --enable-sdl2 会在实际链接目标架构时失败。故交叉编译一律
+    # 显式禁用 sdl2；仅原生构建时按 pkg-config 探测启用。
+    if [[ "$needs_cross_file" == "true" ]]; then
+      args+=(--disable-sdl2)
+    elif PKG_CONFIG_LIBDIR="$pkg_config_libdir" PKG_CONFIG_PATH= pkg-config --exists sdl2; then
       args+=(--enable-sdl2)
+    else
+      args+=(--disable-sdl2)
     fi
     if [[ "$target_arch" != "arm32" ]]; then
       args+=(--enable-ffnvcodec)
@@ -1366,6 +1371,12 @@ build_mpv() {
       cuda_option=disabled
       oss_audio_option=disabled
     fi
+    # SDL2 对 libmpv 非必需；交叉编译（arm32/x86）时其目标架构包常装不全、且 host 的 .pc
+    # 会被误探到，强制 enabled 会令 mpv meson 配置失败。交叉编译一律禁用，原生构建启用。
+    local sdl2_option=enabled
+    if [[ "$needs_cross_file" == "true" ]]; then
+      sdl2_option=disabled
+    fi
 
     args+=(
       -Dplain-gl=enabled
@@ -1394,9 +1405,9 @@ build_mpv() {
       -Dgbm=enabled
       -Dgl-x11=enabled
       -Dopenal=enabled
-      -Dsdl2-audio=enabled
-      -Dsdl2-gamepad=enabled
-      -Dsdl2-video=enabled
+      -Dsdl2-audio="$sdl2_option"
+      -Dsdl2-gamepad="$sdl2_option"
+      -Dsdl2-video="$sdl2_option"
       -Dsixel=enabled
       -Dvaapi=enabled
       -Dvaapi-drm=enabled
