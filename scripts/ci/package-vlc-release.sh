@@ -16,7 +16,7 @@ if [[ -n "$android_libvlc_version" ]]; then
   require_android_libvlc_release_version "$android_libvlc_version"
 fi
 
-asset_name="libvlc-$target_os-$target_arch"
+asset_name="MusesPlayer-libvlc-$target_os-$target_arch"
 package_dir="$WORK_DIR/$asset_name"
 rm -rf "$package_dir"
 mkdir -p "$package_dir"

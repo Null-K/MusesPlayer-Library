@@ -11,7 +11,7 @@ requested_vlc_version="${VLC_VERSION:?VLC_VERSION is required}"
 
 require_vlc_release_version "$requested_vlc_version"
 
-asset_name="libvlc-linux-$target_arch"
+asset_name="MusesPlayer-libvlc-linux-$target_arch"
 flatpak_app="org.videolan.VLC"
 flatpak_ref="app/$flatpak_app/$(uname -m)/stable"
 source_url="https://flathub.org/apps/$flatpak_app"

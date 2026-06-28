@@ -35,7 +35,7 @@ from urllib.parse import quote
 
 repo, url_release_tag, out, *assets = sys.argv[1:]
 data = {"urls": {"vlc": {}, "mpv": {}}}
-pattern = re.compile(r"^lib(vlc|mpv)-([^-]+)-(.+)\.zip$")
+pattern = re.compile(r"^(?:MusesPlayer-)?lib(vlc|mpv)-([^-]+)-(.+)\.zip$")
 
 for asset in sorted(assets, key=lambda p: Path(p).name):
     path = Path(asset)
