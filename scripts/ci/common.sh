@@ -199,8 +199,9 @@ require_vlc_runtime() {
 }
 
 # 裁剪 VLC 插件目录，删除本播放器用不到的大类（桌面 GUI、可视化、控制接口、Lua 脚本、
-# 设备发现、光盘/蓝光等），保留 access/demux/codec/audio/video 等播放核心。受环境变量
-# VLC_PRUNE_PLUGINS 控制：默认 1（裁剪）；设为 0 保留全量插件。
+# 设备发现，以及输出/封装侧的 access_output/mux/stream_out 与元数据解析 meta_engine），
+# 保留 access/demux/codec/audio/video 等播放核心。受环境变量 VLC_PRUNE_PLUGINS 控制：
+# 默认 1（裁剪）；设为 0 保留全量插件。
 #
 # 仅按「整目录」删除确定无用的大类，不做单插件白名单，避免 VLC 版本升级后误删核心模块。
 # 必须在完整性校验（确认下载的是完整插件集）之后调用。
@@ -219,6 +220,10 @@ prune_vlc_plugins() {
     control        # 遥控/热键/dbus/ntservice 等控制接口
     lua            # Lua 脚本（含各网站解析），解析在服务端自做
     services_discovery # 局域网/UPnP 设备发现
+    access_output  # 网络/文件输出（推流/录制侧），纯播放不需要
+    mux            # 封装器（输出侧复用），纯播放不需要
+    stream_out     # 转码/推流输出链，纯播放不需要
+    meta_engine    # 元数据解析（标题/封面等），标题由服务端下发
   )
 
   local before after d
